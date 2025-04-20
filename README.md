@@ -1,5 +1,6 @@
 Backend README - Student Registration System
-Overview
+
+Overview:
 This backend application provides a complete RESTful API for a student registration system using Node.js, Express, Sequelize ORM, and MySQL. It includes secure user registration, authentication with JWT, role-based access control, Swagger documentation, and basic CRUD operations for admin.
 
 Features
@@ -32,6 +33,7 @@ Use Postman or Swagger at http://localhost:5000/api-docs to test endpoints such 
 Admin Login Credentials (for testing)
 - Email: admin@example.com
 - Password: admin123
+
 Note: Admin is seeded automatically when the server starts for the first time.
 
 Technologies Used
