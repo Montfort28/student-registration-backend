@@ -1,6 +1,9 @@
 const bcrypt = require('bcrypt');
-const { User } = require('../models');
 require('dotenv').config();
+const path = require('path');
+const { User } = require(path.join(__dirname, '..', 'models'));
+
+
 
 async function seedAdmin() {
   try {
