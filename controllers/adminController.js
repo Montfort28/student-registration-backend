@@ -1,3 +1,4 @@
+// controllers/adminController.js
 const User = require('../models/user');
 
 // Get all users (admin only)
@@ -14,6 +15,17 @@ exports.getAllUsers = async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
     
+    // Ensure all users have QR codes
+    for (const user of rows) {
+      if (!user.qrCode) {
+        const qrCode = await user.generateQRCode();
+        if (qrCode) {
+          await user.update({ qrCode });
+          user.qrCode = qrCode;
+        }
+      }
+    }
+
     res.status(200).json({
       success: true,
       count,
@@ -95,6 +107,80 @@ exports.deleteUser = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'User deleted successfully'
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get single user by ID (admin only)
+exports.getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const user = await User.findByPk(id, {
+      attributes: { exclude: ['password'] }
+    });
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Ensure user has QR code
+    if (!user.qrCode) {
+      const qrCode = await user.generateQRCode();
+      if (qrCode) {
+        await user.update({ qrCode });
+        user.qrCode = qrCode;
+      }
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Regenerate QR code for specific user (admin only)
+exports.regenerateUserQRCode = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    const qrCode = await user.generateQRCode();
+    if (!qrCode) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to generate QR code'
+      });
+    }
+    
+    await user.update({ qrCode });
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        qrCode
+      }
     });
   } catch (error) {
     res.status(400).json({

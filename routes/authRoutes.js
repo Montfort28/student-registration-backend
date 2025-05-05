@@ -1,4 +1,4 @@
-// routes/authRoutes.js 
+// routes/authRoutes.js
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
@@ -92,5 +92,21 @@ router.post('/login', authController.login);
  *         description: Unauthorized
  */
 router.get('/profile', protect, authController.getProfile);
+
+/**
+ * @swagger
+ * /api/profile/qrcode:
+ *   get:
+ *     summary: Regenerate QR code for the current user
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: QR code regenerated successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/profile/qrcode', protect, authController.regenerateQRCode);
 
 module.exports = router;

@@ -104,6 +104,15 @@ exports.getProfile = async (req, res) => {
     const user = await User.findByPk(req.user.id, {
       attributes: { exclude: ['password'] }
     });
+
+    // Ensure user has QR code
+    if (!user.qrCode) {
+      const qrCode = await user.generateQRCode();
+      if (qrCode) {
+        await user.update({ qrCode });
+        user.qrCode = qrCode;
+      }
+    }
     
     res.status(200).json({
       success: true,
@@ -115,14 +124,41 @@ exports.getProfile = async (req, res) => {
       message: error.message
     });
   }
-  exports.register = async (req, res) => {
-    try {
-      console.log('Register request received:', req.body);
-      // your registration logic
-    } catch (err) {
-      console.error('Error during registration:', err);
-      res.status(500).json({ message: 'Server error' });
+};
+
+// Regenerate QR code for current user
+exports.regenerateQRCode = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
-  };
-  
+    
+    const qrCode = await user.generateQRCode();
+    
+    if (!qrCode) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to generate QR code'
+      });
+    }
+    
+    await user.update({ qrCode });
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        qrCode
+      }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
 };
